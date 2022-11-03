@@ -80,6 +80,41 @@ app.delete('/api/students/:studentId', cors(), async (req, res) =>{
 });
 
 
+// create the POST request for a new user
+// CREATE TABLE users (
+// 	ID SERIAL PRIMARY KEY,
+// 	lastname varchar(255),
+// 	firstname varchar(255),
+//     email varchar(255), 
+//     sub varchar(255));
+app.post('/api/me', cors(), async (req, res) => {
+  const newUser = {
+    lastname: req.body.family_name,
+    firstname: req.body.given_name,
+    email: req.body.email,
+    sub: req.body.sub
+
+  }
+  //console.log(newUser);
+
+  const queryEmail = 'SELECT * FROM users WHERE email=$1 LIMIT 1';
+  const valuesEmail = [newUser.email]
+  const resultsEmail = await db.query(queryEmail, valuesEmail);
+  //console.log(resultsEmail);
+  //question marks below are optional chaining
+  if(resultsEmail.rows[0]?.email?.length > 0){
+    console.log(`Thank you ${resultsEmail.length() > 0} for comming back`)
+  } else{
+  const query = 'INSERT INTO users(lastname, firstname, email, sub) VALUES($1, $2, $3, $4) RETURNING *'
+  const values = [newUser.lastname, newUser.firstname, newUser.email, newUser.sub]
+  const result = await db.query(query, values);
+  console.log(result);
+  res.send('it worked')
+  }
+
+});
+
+
 
 // console.log that your server is up and running
 app.listen(PORT, () => {
